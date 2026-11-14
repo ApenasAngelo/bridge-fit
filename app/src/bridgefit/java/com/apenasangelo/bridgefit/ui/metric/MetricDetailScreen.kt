@@ -19,6 +19,13 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.apenasangelo.bridgefit.data.Period
+import com.apenasangelo.bridgefit.data.PeriodRepository
+import com.apenasangelo.bridgefit.data.PeriodSeries
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -69,14 +76,41 @@ fun MetricDetailScreen(metric: Metric, vm: FitViewModel, onBack: () -> Unit) {
     val week by vm.week.collectAsStateWithLifecycle()
     val live by vm.liveHeartRate.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var period by rememberSaveable { mutableStateOf(Period.DAY) }
+    val dataVersion by vm.dataVersion.collectAsStateWithLifecycle()
+    val series by produceState<PeriodSeries?>(null, metric, period, day, dataVersion) {
+        value = null
+        if (period != Period.DAY) value = PeriodRepository.series(metric, period, day)
+    }
 
     CompositionLocalProvider(LocalHero provides metric.color) { DetailScaffold(
         title = stringResource(metric.title),
         glow = metric.color,
         day = day,
+        period = period,
+        onPeriod = { period = it },
         onBack = onBack,
-        onShiftDay = vm::shiftDay,
+        onShiftDay = { steps ->
+            when (period) {
+                Period.DAY -> vm.shiftDay(steps)
+                Period.WEEK -> vm.shiftDay(steps * 7)
+                Period.MONTH -> vm.selectDay(day.plusMonths(steps))
+                Period.YEAR -> vm.selectDay(day.plusYears(steps))
+            }
+        },
     ) {
+        if (period != Period.DAY) {
+            periodContent(metric, series)
+            val device = deviceFor(metric)
+            if (device != null && metric.chart != null) {
+                item {
+                    CapsuleButton(stringResource(R.string.bf_open_charts), metric.color) {
+                        Upstream.charts(context, device, day, metric.chart, metric.title)
+                    }
+                }
+            }
+            return@DetailScaffold
+        }
         val snap = snapshot
         if (snap == null || snap.day != day) {
             item {
@@ -88,6 +122,7 @@ fun MetricDetailScreen(metric: Metric, vm: FitViewModel, onBack: () -> Unit) {
         }
         when (metric) {
             Metric.ACTIVITY -> activity(snap, goals, week, vm::selectDay)
+            Metric.EXERCISE -> exercise(snap, goals)
             Metric.STEPS -> steps(snap, goals)
             Metric.DISTANCE -> distance(snap, goals)
             Metric.HEART_RATE -> heartRate(snap, live, vm.canMeasureHeartRate, vm::toggleLiveHeartRate)
@@ -127,7 +162,7 @@ private fun deviceFor(metric: Metric): GBDevice? {
     return devices.firstOrNull { dev ->
         val c = dev.deviceCoordinator
         c.supportsCharts(dev) && when (metric) {
-            Metric.ACTIVITY, Metric.STEPS, Metric.DISTANCE -> c.supportsActivityTracking(dev)
+            Metric.ACTIVITY, Metric.EXERCISE, Metric.STEPS, Metric.DISTANCE -> c.supportsActivityTracking(dev)
             Metric.HEART_RATE -> c.supportsHeartRateMeasurement(dev)
             Metric.SLEEP -> c.supportsSleepMeasurement(dev)
             Metric.SPO2 -> c.supportsSpo2(dev)
@@ -261,6 +296,21 @@ private fun WeekStrip(week: List<RingDay>, selected: LocalDate, goals: FitGoals,
                 }
             }
         }
+    }
+}
+
+private fun LazyListScope.exercise(snap: DaySnapshot, goals: FitGoals) {
+    val data = snap.activeTime ?: return noData()
+    item {
+        Hero(stringResource(R.string.bf_total)) {
+            ValueText(
+                stringResource(R.string.bf_ring_value, Fmt.int(data.total), Fmt.int(goals.activeMinutes)),
+                stringResource(R.string.bf_unit_min), LocalHero.current, style = FitType.heroValue,
+            )
+        }
+    }
+    data.hourly?.let { hourly ->
+        item { ChartBlock { BarChart(hourly, FitColors.exercise, activeCount = data.hoursStarted) } }
     }
 }
 

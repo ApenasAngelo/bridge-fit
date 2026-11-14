@@ -25,6 +25,18 @@ import java.util.Locale
 object Fmt {
     fun int(value: Number): String = NumberFormat.getIntegerInstance().format(value)
 
+    /** Short axis labels: "950", "2.5k", "20k" (localized: "20 mil" in Portuguese). */
+    fun compact(value: Float): String =
+        if (android.os.Build.VERSION.SDK_INT >= 30) {
+            android.icu.number.NumberFormatter.withLocale(Locale.getDefault())
+                .notation(android.icu.number.Notation.compactShort())
+                .format(value.toDouble()).toString()
+        } else if (value >= 1000f) {
+            decimal(value / 1000f, if (value % 1000f == 0f) 0 else 1) + "k"
+        } else {
+            int(value.toInt())
+        }
+
     fun decimal(value: Float, digits: Int = 1): String = NumberFormat.getNumberInstance().apply {
         minimumFractionDigits = digits
         maximumFractionDigits = digits

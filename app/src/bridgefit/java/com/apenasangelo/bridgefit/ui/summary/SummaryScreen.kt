@@ -50,6 +50,7 @@ import com.apenasangelo.bridgefit.ui.FitViewModel
 import com.apenasangelo.bridgefit.ui.Fmt
 import com.apenasangelo.bridgefit.ui.Metric
 import com.apenasangelo.bridgefit.ui.Upstream
+import com.apenasangelo.bridgefit.ui.Routes
 import com.apenasangelo.bridgefit.ui.components.ActivityRings
 import com.apenasangelo.bridgefit.ui.components.FitCard
 import com.apenasangelo.bridgefit.ui.components.Hypnogram
@@ -80,7 +81,9 @@ fun SummaryScreen(
     val devices by vm.devices.collectAsStateWithLifecycle()
     val goals by vm.goals.collectAsStateWithLifecycle()
     val refreshing by vm.refreshing.collectAsStateWithLifecycle()
+    val trends by vm.trends.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val navigator = com.apenasangelo.bridgefit.ui.LocalNavigator.current
 
     PullToRefreshBox(
         isRefreshing = refreshing,
@@ -101,7 +104,7 @@ fun SummaryScreen(
                     day = day,
                     onPrevious = { vm.shiftDay(-1) },
                     onNext = { vm.shiftDay(1) },
-                    onProfile = { Upstream.userPreferences(context) },
+                    onProfile = { navigator(Routes.PROFILE) },
                 )
             }
             if (devices.isNotEmpty()) {
@@ -166,6 +169,7 @@ fun SummaryScreen(
                     )
                 }
             }
+            item { TrendsCard(trends, onOpenMetric) }
             if (hasHealth(snap)) {
                 item { SectionTitle(stringResource(R.string.bf_health_metrics)) }
             }

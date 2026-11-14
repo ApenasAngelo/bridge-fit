@@ -42,6 +42,8 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.apenasangelo.bridgefit.data.Period
+import com.apenasangelo.bridgefit.data.PeriodRepository
 import com.apenasangelo.bridgefit.ui.Fmt
 import com.apenasangelo.bridgefit.ui.components.FitCard
 import com.apenasangelo.bridgefit.ui.glass.FloatingTopBar
@@ -132,13 +134,68 @@ fun DetailScaffold(
     title: String,
     day: LocalDate,
     glow: Color,
+    period: Period,
+    onPeriod: (Period) -> Unit,
     onBack: () -> Unit,
     onShiftDay: (Long) -> Unit,
     content: LazyListScope.() -> Unit,
 ) {
     PushedScreen(title, onBack, glow) {
-        item { DaySwitcher(day, onShiftDay) }
+        item { PeriodPicker(period, onPeriod) }
+        if (period == Period.DAY) item { DaySwitcher(day, onShiftDay) } else item { PeriodSwitcher(period, day, onShiftDay) }
         content()
+    }
+}
+
+/**
+ * The D / W / M / Y segmented control, iOS-style: a capsule track with the selected segment raised.
+ */
+@Composable
+fun PeriodPicker(selected: Period, onSelect: (Period) -> Unit) {
+    val labels = listOf(
+        Period.DAY to R.string.bf_period_day,
+        Period.WEEK to R.string.bf_period_week,
+        Period.MONTH to R.string.bf_period_month,
+        Period.YEAR to R.string.bf_period_year,
+    )
+    Row(
+        Modifier.fillMaxWidth().height(40.dp).clip(CircleShape).background(fit.control.copy(alpha = 0.8f)).padding(3.dp),
+    ) {
+        labels.forEach { (period, label) ->
+            val active = period == selected
+            Box(
+                Modifier.weight(1f).fillMaxSize().clip(CircleShape)
+                    .background(if (active) (if (fit.isDark) Color(0xFF5A5A5E) else Color.White) else Color.Transparent)
+                    .clickable { onSelect(period) },
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(stringResource(label), style = FitType.subheadlineBold, color = fit.textPrimary)
+            }
+        }
+    }
+}
+
+/**
+ * Previous / next arrows around the current week, month or year.
+ */
+@Composable
+fun PeriodSwitcher(period: Period, day: LocalDate, onShift: (Long) -> Unit) {
+    val (_, to) = PeriodRepository.range(period, day)
+    val canGoForward = to.isBefore(LocalDate.now())
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Box(Modifier.size(36.dp).clip(CircleShape).clickable { onShift(-1) }, contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.ChevronLeft, stringResource(R.string.bf_previous_period), tint = fit.textSecondary)
+        }
+        Box(Modifier.weight(1f))
+        Box(
+            Modifier.size(36.dp).clip(CircleShape).clickable(enabled = canGoForward) { onShift(1) },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                Icons.Rounded.ChevronRight, stringResource(R.string.bf_next_period),
+                tint = if (canGoForward) fit.textSecondary else fit.textTertiary.copy(alpha = 0.4f),
+            )
+        }
     }
 }
 

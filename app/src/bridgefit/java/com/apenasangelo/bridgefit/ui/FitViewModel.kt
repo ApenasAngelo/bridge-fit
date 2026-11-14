@@ -7,6 +7,7 @@ import com.apenasangelo.bridgefit.data.DaySnapshot
 import com.apenasangelo.bridgefit.data.FitGoals
 import com.apenasangelo.bridgefit.data.FitRepository
 import com.apenasangelo.bridgefit.data.GbEvents
+import com.apenasangelo.bridgefit.data.PeriodRepository
 import com.apenasangelo.bridgefit.data.RingDay
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -62,6 +63,13 @@ data class DeviceUi(
     }
 }
 
+/**
+ * A metric's recent average ([recent], last 30 days) against its longer baseline ([baseline], last 90 days).
+ */
+data class Trend(val metric: Metric, val recent: Float, val baseline: Float) {
+    val isUp: Boolean get() = recent >= baseline
+}
+
 @OptIn(FlowPreview::class)
 class FitViewModel(app: Application) : AndroidViewModel(app) {
     private val _day = MutableStateFlow(LocalDate.now())
@@ -85,7 +93,15 @@ class FitViewModel(app: Application) : AndroidViewModel(app) {
     private val _liveHeartRate = MutableStateFlow<Int?>(null)
     val liveHeartRate: StateFlow<Int?> = _liveHeartRate.asStateFlow()
 
+    /** Increments whenever new data was stored, so period charts reload. */
+    private val _dataVersion = MutableStateFlow(0)
+    val dataVersion: StateFlow<Int> = _dataVersion.asStateFlow()
+
+    private val _trends = MutableStateFlow<List<Trend>?>(null)
+    val trends: StateFlow<List<Trend>?> = _trends.asStateFlow()
+
     private var loadJob: Job? = null
+    private var trendsJob: Job? = null
     private var measuringDevice: GBDevice? = null
 
     init {
@@ -96,8 +112,14 @@ class FitViewModel(app: Application) : AndroidViewModel(app) {
         // New data arrives in bursts while syncing; reload once it settles.
         events.filter { it == GBApplication.ACTION_NEW_DATA }
             .debounce(1500)
-            .onEach { reload() }
+            .onEach {
+                PeriodRepository.invalidateRecent()
+                _dataVersion.value++
+                reload()
+                loadTrends()
+            }
             .launchIn(viewModelScope)
+        loadTrends()
         GbEvents.realtimeHeartRate(app)
             .filter { it in 1..250 }
             .onEach { if (measuringDevice != null) _liveHeartRate.value = it }
@@ -124,6 +146,26 @@ class FitViewModel(app: Application) : AndroidViewModel(app) {
         loadJob = viewModelScope.launch {
             _snapshot.value = FitRepository.loadDay(day)
             _week.value = FitRepository.loadRingsHistory(day, 7)
+        }
+    }
+
+    /**
+     * Compares the last 30 days with the last 90 for the main metrics, in the background. A metric needs at least
+     * 14 days with data in the 90-day window to have a trend.
+     */
+    fun loadTrends() {
+        trendsJob?.cancel()
+        trendsJob = viewModelScope.launch {
+            val yesterday = LocalDate.now().minusDays(1)
+            val metrics = listOf(Metric.ACTIVITY, Metric.EXERCISE, Metric.STEPS, Metric.DISTANCE, Metric.SLEEP, Metric.HEART_RATE)
+            _trends.value = metrics.mapNotNull { metric ->
+                val days = PeriodRepository.daily(metric, yesterday.minusDays(89), yesterday)
+                val known = days.filter { it.value != null }
+                if (known.size < 14) return@mapNotNull null
+                val recent = known.filter { it.day > yesterday.minusDays(30) }.map { it.value!! }
+                if (recent.isEmpty()) return@mapNotNull null
+                Trend(metric, recent.average().toFloat(), known.map { it.value!! }.average().toFloat())
+            }
         }
     }
 

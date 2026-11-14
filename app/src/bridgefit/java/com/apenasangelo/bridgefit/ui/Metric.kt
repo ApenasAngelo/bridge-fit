@@ -10,6 +10,7 @@ import androidx.compose.material.icons.rounded.MonitorHeart
 import androidx.compose.material.icons.rounded.Route
 import androidx.compose.material.icons.rounded.SelfImprovement
 import androidx.compose.material.icons.rounded.Thermostat
+import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material.icons.rounded.WaterDrop
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,7 +30,8 @@ enum class Metric(
     /** A shorter title for the half-width Summary cards. */
     @StringRes val shortTitle: Int = title,
 ) {
-    ACTIVITY("activity", R.string.bf_activity, Icons.Rounded.LocalFireDepartment, FitColors.move, "activity"),
+    ACTIVITY("activity", R.string.bf_activity, Icons.Rounded.LocalFireDepartment, FitColors.move, "activity", shortTitle = R.string.bf_move),
+    EXERCISE("exercise", R.string.bf_exercise, Icons.Rounded.Timer, FitColors.exercise, "activity"),
     STEPS("steps", R.string.bf_steps, Icons.AutoMirrored.Rounded.DirectionsWalk, FitColors.steps, "stepsweek"),
     DISTANCE("distance", R.string.bf_distance, Icons.Rounded.Route, FitColors.distance, "stepsweek"),
     HEART_RATE("heart", R.string.bf_heart_rate, Icons.Rounded.Favorite, FitColors.heart, "heartrate", R.string.bf_about_metric_heart),

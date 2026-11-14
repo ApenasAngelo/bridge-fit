@@ -29,6 +29,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.apenasangelo.bridgefit.ui.Upstream
+import com.apenasangelo.bridgefit.ui.Routes
 import com.apenasangelo.bridgefit.ui.components.GroupCaption
 import com.apenasangelo.bridgefit.ui.components.GroupedList
 import com.apenasangelo.bridgefit.ui.components.ListRow
@@ -44,6 +45,7 @@ private val Gray = Color(0xFF8E8E93)
 @Composable
 fun SettingsScreen(contentPadding: PaddingValues) {
     val context = LocalContext.current
+    val navigator = com.apenasangelo.bridgefit.ui.LocalNavigator.current
     LazyColumn(
         Modifier.fillMaxSize().background(fit.background),
         contentPadding = PaddingValues(
@@ -66,7 +68,7 @@ fun SettingsScreen(contentPadding: PaddingValues) {
                         ListRow(
                             stringResource(R.string.bf_settings_goals), subtitle = stringResource(R.string.bf_settings_goals_subtitle),
                             icon = Icons.Rounded.Person, iconBackground = FitColors.move,
-                            onClick = { Upstream.userPreferences(context) },
+                            onClick = { navigator(Routes.PROFILE) },
                         )
                     },
                     {

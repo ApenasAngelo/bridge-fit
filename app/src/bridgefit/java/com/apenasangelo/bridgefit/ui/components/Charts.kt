@@ -39,7 +39,7 @@ import kotlin.math.max
 import kotlin.math.pow
 
 /** Width reserved on the right of a chart for the y-axis labels. */
-private val YAxisWidth = 40.dp
+private val YAxisWidth = 44.dp
 
 /**
  * A lighter tint of the color for the top of a bar, Apple-style: the gradient is subtle but visible.
@@ -132,7 +132,7 @@ fun BarChart(
     showGrid: Boolean = true,
     showYAxis: Boolean = true,
     barFraction: Float = 0.55f,
-    yFormat: (Float) -> String = { Fmt.int(it.toInt()) },
+    yFormat: (Float) -> String = { Fmt.compact(it) },
 ) {
     val grid = fit.chartGrid
     val empty = fit.textTertiary.copy(alpha = 0.35f)
@@ -223,6 +223,52 @@ fun RangeChart(
             }
         }
         if (showAxis) XAxis(HourLabels)
+    }
+}
+
+/**
+ * One low–high capsule per bucket (a day or a month), for ranged metrics over a period. Null buckets have no data.
+ */
+@Composable
+fun RangeBars(
+    ranges: List<Pair<Float, Float>?>,
+    color: Color,
+    modifier: Modifier = Modifier,
+    height: Dp = 200.dp,
+    xLabels: List<String>,
+) {
+    val grid = fit.chartGrid
+    val known = ranges.filterNotNull()
+    val low = (known.minOfOrNull { it.first } ?: 0f)
+    val high = (known.maxOfOrNull { it.second } ?: 1f)
+    val pad = ((high - low) * 0.1f).coerceAtLeast(1f)
+    val bottom = (low - pad).coerceAtLeast(0f)
+    val top = high + pad
+    Column(modifier) {
+        Row {
+            Canvas(Modifier.weight(1f).height(height)) {
+                chartGrid(grid, xLabels.size.coerceAtLeast(1), horizontals = true)
+                val span = (top - bottom).coerceAtLeast(0.1f)
+                val slot = size.width / ranges.size.coerceAtLeast(1)
+                val w = (slot * 0.5f).coerceIn(2f, 14.dp.toPx())
+                ranges.forEachIndexed { i, r ->
+                    r ?: return@forEachIndexed
+                    val yTop = size.height - (r.second - bottom) / span * size.height
+                    val yBottom = max(size.height - (r.first - bottom) / span * size.height, yTop + 0.5f)
+                    val x = i * slot + slot / 2f
+                    drawLine(
+                        barBrush(color, yTop - w / 2f, yBottom + w / 2f), Offset(x, yTop), Offset(x, yBottom),
+                        strokeWidth = w, cap = StrokeCap.Round,
+                    )
+                }
+            }
+            Column(Modifier.width(YAxisWidth).height(height).padding(start = 6.dp)) {
+                Text(Fmt.int(top.toInt()), style = FitType.caption, color = fit.textSecondary, maxLines = 1)
+                Box(Modifier.weight(1f))
+                Text(Fmt.int(bottom.toInt()), style = FitType.caption, color = fit.textSecondary, maxLines = 1)
+            }
+        }
+        XAxis(xLabels, reserveYAxis = true)
     }
 }
 

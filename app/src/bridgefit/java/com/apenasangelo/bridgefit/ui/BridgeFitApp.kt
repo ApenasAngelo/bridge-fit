@@ -15,7 +15,10 @@ import androidx.compose.material.icons.rounded.DonutLarge
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Watch
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.staticCompositionLocalOf
+import com.apenasangelo.bridgefit.ui.settings.ProfileScreen
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -54,7 +57,7 @@ fun BridgeFitApp(vm: FitViewModel = viewModel()) {
     LaunchedEffect(Unit) { GlassSettings.load() }
     BridgeFitTheme {
         val nav = rememberNavController()
-        NavHost(
+        CompositionLocalProvider(LocalNavigator provides { route -> nav.navigate(route) }) { NavHost(
             nav,
             startDestination = "tabs",
             modifier = Modifier.fillMaxSize().background(fit.background),
@@ -69,9 +72,20 @@ fun BridgeFitApp(vm: FitViewModel = viewModel()) {
             composable("metric/{metric}") { entry ->
                 MetricDetailScreen(Metric.fromRoute(entry.arguments?.getString("metric")), vm) { nav.popBackStack() }
             }
-        }
+            composable(Routes.PROFILE) {
+                ProfileScreen(onBack = { nav.popBackStack() }, onChangedGoals = { vm.reload() })
+            }
+        } }
     }
 }
+
+/** Routes of the native screens pushed over the tabs. */
+object Routes {
+    const val PROFILE = "profile"
+}
+
+/** Navigates to a route of [Routes]. */
+val LocalNavigator = staticCompositionLocalOf<(String) -> Unit> { {} }
 
 @Composable
 private fun Tabs(vm: FitViewModel, onOpenMetric: (Metric) -> Unit) {

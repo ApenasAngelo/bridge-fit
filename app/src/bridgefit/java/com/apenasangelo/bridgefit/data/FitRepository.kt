@@ -169,9 +169,9 @@ object FitRepository {
     /**
      * A loaded value; the wrapper tells "no supported device" (null wrapper) apart from "no data" (null value).
      */
-    private class Loaded<D>(val value: D)
+    internal class Loaded<D>(val value: D)
 
-    private suspend fun <D> load(
+    internal suspend fun <D> load(
         widget: GBWidget<D>,
         day: LocalDate,
         variant: WidgetVariant = WidgetVariant.METRIC_LARGE,
