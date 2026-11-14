@@ -132,6 +132,8 @@ app/bridgefit.gradle                      fork build config: flavor, Compose dep
 app/src/bridgefit/AndroidManifest.xml     new launcher activity; removes ControlCenterv2's launcher entry
 app/src/bridgefit/java/com/apenasangelo/bridgefit/
   BridgeFitActivity.kt                    entry point (Compose host, first-run and permission flow)
+  ClassicRedirect.kt                      sends upstream launches of ControlCenterv2 (notification, Up, pairing)
+                                          to BridgeFitActivity, unless opened as "Classic interface"
   ui/theme/                               colors, typography, shapes (dark + light)
   ui/components/                          rings, cards, charts, headers
   ui/summary/                             Summary screen (rings + metric cards)
@@ -139,6 +141,13 @@ app/src/bridgefit/java/com/apenasangelo/bridgefit/
   ui/devices/                             devices screen (battery, connection, sync, device settings)
   data/                                   repositories that adapt upstream widgets/providers to UI state
 ```
+
+## Known gaps of the new UI
+
+- Weekly/monthly trends are not native yet; detail screens link to the upstream charts ("Show All Charts").
+- Ring gradients show a small seam at 12 o'clock when a ring passes 100%.
+- The launcher icon is replaced only on Android 8+ (adaptive icon); older versions keep the Gadgetbridge PNGs.
+- Upstream screens (settings, device settings, charts, pairing) keep the Gadgetbridge Material look.
 
 ## Roadmap
 
