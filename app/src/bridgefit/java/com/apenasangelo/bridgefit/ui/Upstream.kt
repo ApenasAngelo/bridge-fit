@@ -34,7 +34,9 @@ object Upstream {
     fun discovery(context: Context) = start<DiscoveryActivityV2>(context)
     fun workouts(context: Context) = start<WorkoutListActivity>(context)
 
-    fun classicInterface(context: Context) = start<ControlCenterv2>(context)
+    fun classicInterface(context: Context) = context.startActivity(
+        Intent(context, ControlCenterv2::class.java).putExtra(com.apenasangelo.bridgefit.ClassicRedirect.EXTRA_CLASSIC, true),
+    )
 
     fun deviceSettings(context: Context, device: GBDevice) = DeviceSettingsActivity.start(context, device)
 

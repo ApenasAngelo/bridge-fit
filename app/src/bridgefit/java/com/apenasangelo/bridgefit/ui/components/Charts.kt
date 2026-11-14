@@ -132,6 +132,8 @@ fun RangeChart(
     height: Dp = 160.dp,
     showAxis: Boolean = true,
     showGuides: Boolean = true,
+    // Off by default: the line holds 15-minute averages, so its extremes differ from the true min/max.
+    showLabels: Boolean = false,
 ) {
     val hours = line.size / perHour
     val ranges = (0 until hours).map { h ->
@@ -162,7 +164,7 @@ fun RangeChart(
                     )
                 }
             }
-            if (known.isNotEmpty() && showGuides) {
+            if (known.isNotEmpty() && showLabels) {
                 Column(Modifier.fillMaxWidth().height(height)) {
                     Text(
                         known.maxOf { it.second }.toInt().toString(), style = FitType.caption, color = label,

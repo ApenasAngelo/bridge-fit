@@ -55,7 +55,6 @@ import com.apenasangelo.bridgefit.ui.theme.FitColors
 import com.apenasangelo.bridgefit.ui.theme.FitType
 import com.apenasangelo.bridgefit.ui.theme.fit
 import nodomain.freeyourgadget.gadgetbridge.R
-import nodomain.freeyourgadget.gadgetbridge.activities.ControlCenterv2
 
 @Composable
 fun DevicesScreen(vm: FitViewModel, contentPadding: PaddingValues) {
@@ -173,7 +172,7 @@ private fun DeviceCard(device: DeviceUi, vm: FitViewModel) {
                     stringResource(R.string.bf_device_more),
                     subtitle = stringResource(R.string.bf_settings_classic_subtitle),
                     icon = Icons.Rounded.MoreHoriz, iconBackground = Color(0xFF8E8E93),
-                    onClick = { context.startActivity(android.content.Intent(context, ControlCenterv2::class.java)) },
+                    onClick = { Upstream.classicInterface(context) },
                 )
             }
         }

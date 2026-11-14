@@ -20,6 +20,12 @@
             </intent-filter>
         </activity>
 
+        <!-- Redirects unintended launches of ControlCenterv2 to Bridge Fit; serves no data. -->
+        <provider
+            android:name="com.apenasangelo.bridgefit.ClassicRedirect"
+            android:authorities="${applicationId}.classic_redirect"
+            android:exported="false" />
+
         <activity
             android:name="com.apenasangelo.bridgefit.BridgeFitActivity"
             android:configChanges="keyboard|keyboardHidden|navigation"
