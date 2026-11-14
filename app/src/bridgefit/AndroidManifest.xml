@@ -20,10 +20,10 @@
             </intent-filter>
         </activity>
 
-        <!-- Redirects unintended launches of ControlCenterv2 to Bridge Fit; serves no data. -->
+        <!-- Process-start hooks: redirects ControlCenterv2 launches, re-skins upstream screens. Serves no data. -->
         <provider
-            android:name="com.apenasangelo.bridgefit.ClassicRedirect"
-            android:authorities="${applicationId}.classic_redirect"
+            android:name="com.apenasangelo.bridgefit.BridgeFitBootstrap"
+            android:authorities="${applicationId}.bridgefit_bootstrap"
             android:exported="false" />
 
         <activity
