@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bridge Fit launcher icon: three activity rings. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path android:pathData="M54,28 A26,26 0 1,1 53.99,28" android:strokeColor="#FF2D6F" android:strokeAlpha="0.25" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M54,35.5 A18.5,18.5 0 1,1 53.99,35.5" android:strokeColor="#A4F02A" android:strokeAlpha="0.25" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M54,43 A11,11 0 1,1 53.99,43" android:strokeColor="#2EDCF0" android:strokeAlpha="0.25" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M54,28 A26,26 0 1,1 28,54" android:strokeColor="#FF2D6F" android:strokeAlpha="1" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M54,35.5 A18.5,18.5 0 1,1 42.11,68.17" android:strokeColor="#A4F02A" android:strokeAlpha="1" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+    <path android:pathData="M54,43 A11,11 0 1,1 44.47,48.5" android:strokeColor="#2EDCF0" android:strokeAlpha="1" android:strokeWidth="6.5" android:strokeLineCap="round" android:fillColor="#00000000"/>
+</vector>

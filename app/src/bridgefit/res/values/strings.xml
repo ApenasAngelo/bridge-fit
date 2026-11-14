@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Flavor overrides of the upstream app identity (see app/src/mainline/res/values/strings.xml). -->
+    <string translatable="false" name="pebble_content_provider">com.apenasangelo.bridgefit.pebble_provider</string>
+    <string translatable="false" name="app_name">Bridge Fit</string>
+    <string translatable="false" name="title_activity_controlcenter">Bridge Fit</string>
+    <string name="about_activity_title">About Bridge Fit</string>
+    <string name="about_description">Bridge Fit is a fork of Gadgetbridge with a new interface. Cloudless, copylefted and libre, like Gadgetbridge.</string>
+    <string name="gadgetbridge_running">Bridge Fit running</string>
+
+    <!-- Tabs -->
+    <string name="bf_tab_summary">Summary</string>
+    <string name="bf_tab_devices">Devices</string>
+    <string name="bf_tab_settings">Settings</string>
+
+    <!-- Summary -->
+    <string name="bf_summary_title">Summary</string>
+    <string name="bf_today">Today</string>
+    <string name="bf_yesterday">Yesterday</string>
+    <string name="bf_activity">Activity</string>
+    <string name="bf_move">Move</string>
+    <string name="bf_exercise">Exercise</string>
+    <string name="bf_steps">Steps</string>
+    <string name="bf_distance">Distance</string>
+    <string name="bf_heart_rate">Heart Rate</string>
+    <string name="bf_sleep">Sleep</string>
+    <string name="bf_spo2">Blood Oxygen</string>
+    <string name="bf_hrv">Heart Rate Variability</string>
+    <string name="bf_stress">Stress</string>
+    <string name="bf_temperature">Skin Temperature</string>
+    <string name="bf_hrv_short">HRV</string>
+    <string name="bf_temperature_short">Temperature</string>
+    <string name="bf_workouts">Workouts</string>
+    <string name="bf_workouts_subtitle">See all recorded workouts</string>
+    <string name="bf_trends">Trends</string>
+    <string name="bf_show_more">Show More</string>
+    <string name="bf_no_data">No Data</string>
+    <string name="bf_no_devices_title">Pair a device to get started</string>
+    <string name="bf_no_devices_text">Bridge Fit uses Gadgetbridge to talk to your ring, watch or band directly, with no cloud.</string>
+    <string name="bf_pair_device">Pair Device</string>
+    <string name="bf_highlights">Highlights</string>
+    <string name="bf_health_metrics">Health Metrics</string>
+
+    <!-- Units -->
+    <string name="bf_unit_kcal">KCAL</string>
+    <string name="bf_unit_min">MIN</string>
+    <string name="bf_unit_steps">STEPS</string>
+    <string name="bf_unit_bpm">BPM</string>
+    <string name="bf_unit_ms">ms</string>
+    <string name="bf_unit_percent">%</string>
+    <string name="bf_unit_hr">hr</string>
+    <string name="bf_unit_min_short">min</string>
+    <string name="bf_unit_celsius">°C</string>
+
+    <!-- Values -->
+    <string name="bf_ring_value">%1$s/%2$s</string>
+    <string name="bf_latest_at">Latest: %1$s</string>
+    <string name="bf_range">%1$s–%2$s</string>
+    <string name="bf_range_caption">Range</string>
+    <string name="bf_resting">Resting</string>
+    <string name="bf_average">Average</string>
+    <string name="bf_minimum">Minimum</string>
+    <string name="bf_maximum">Maximum</string>
+    <string name="bf_lowest">Lowest</string>
+    <string name="bf_latest">Latest</string>
+    <string name="bf_total">Total</string>
+    <string name="bf_goal">Goal</string>
+    <string name="bf_time_asleep">Time Asleep</string>
+    <string name="bf_sleep_score">Sleep Score</string>
+    <string name="bf_stage_awake">Awake</string>
+    <string name="bf_stage_rem">REM</string>
+    <string name="bf_stage_core">Core</string>
+    <string name="bf_stage_deep">Deep</string>
+    <string name="bf_last_night">Last Night</string>
+    <string name="bf_weekly_average">7-Day Average</string>
+    <string name="bf_baseline">Baseline</string>
+    <string name="bf_stress_relaxed">Relaxed</string>
+    <string name="bf_stress_mild">Mild</string>
+    <string name="bf_stress_moderate">Moderate</string>
+    <string name="bf_stress_high">High</string>
+    <string name="bf_time_in_zones">Time in Each Level</string>
+    <string name="bf_open_charts">Show All Charts</string>
+    <string name="bf_open_charts_subtitle">Weeks, months and every metric, in the Gadgetbridge charts</string>
+    <string name="bf_measure_now">Measure Now</string>
+    <string name="bf_measuring">Measuring…</string>
+    <string name="bf_stop">Stop</string>
+    <string name="bf_live">Live</string>
+    <string name="bf_hourly">Hourly</string>
+    <string name="bf_previous_day">Previous day</string>
+    <string name="bf_next_day">Next day</string>
+    <string name="bf_about_metric_heart">Heart rate measured by your device through the day. Resting heart rate is the lowest sustained value while you are inactive.</string>
+    <string name="bf_about_metric_hrv">Heart rate variability is the variation in time between heartbeats, measured while you sleep. Higher values usually mean better recovery.</string>
+    <string name="bf_about_metric_stress">Stress is estimated by your device from heart rate variability. It is not a medical measurement.</string>
+    <string name="bf_about_metric_temperature">Skin temperature measured on your finger. It varies with the room and your activity; the trend matters more than a single value.</string>
+    <string name="bf_about_metric_spo2">Blood oxygen saturation, as measured by your device, usually while you sleep.</string>
+    <string name="bf_about_metric_sleep">Sleep stages as detected by your device. Core is the light sleep stage.</string>
+    <string name="bf_about">About</string>
+
+    <!-- Activity detail -->
+    <string name="bf_move_goal">Move goal</string>
+    <string name="bf_this_week">This Week</string>
+    <string name="bf_steps_and_distance">Steps &amp; Distance</string>
+
+    <!-- Devices -->
+    <string name="bf_devices_title">Devices</string>
+    <string name="bf_battery">Battery</string>
+    <string name="bf_charging">Charging</string>
+    <string name="bf_connect">Connect</string>
+    <string name="bf_disconnect">Disconnect</string>
+    <string name="bf_sync">Sync</string>
+    <string name="bf_syncing">Syncing…</string>
+    <string name="bf_device_settings">Device Settings</string>
+    <string name="bf_find_device">Find Device</string>
+    <string name="bf_device_more">More Options</string>
+    <string name="bf_firmware">Firmware %1$s</string>
+    <string name="bf_add_device">Add Device</string>
+    <string name="bf_sync_all">Sync All</string>
+
+    <!-- Settings -->
+    <string name="bf_settings_title">Settings</string>
+    <string name="bf_settings_app">App Settings</string>
+    <string name="bf_settings_app_subtitle">Notifications, Health Connect, language and more</string>
+    <string name="bf_settings_goals">Profile &amp; Goals</string>
+    <string name="bf_settings_goals_subtitle">Body measurements and daily goals</string>
+    <string name="bf_settings_data">Data Management</string>
+    <string name="bf_settings_data_subtitle">Export, import and clean the database</string>
+    <string name="bf_settings_permissions">Permissions</string>
+    <string name="bf_settings_classic">Classic Interface</string>
+    <string name="bf_settings_classic_subtitle">The original Gadgetbridge main screen</string>
+    <string name="bf_settings_debug">Debug</string>
+    <string name="bf_settings_about">About</string>
+    <string name="bf_settings_about_subtitle">Bridge Fit is built on Gadgetbridge, licensed under AGPL-3.0</string>
+    <string name="bf_settings_quit">Quit Bridge Fit</string>
+    <string name="bf_section_general">General</string>
+    <string name="bf_section_data">Data</string>
+    <string name="bf_section_advanced">Advanced</string>
+    <string name="bf_version">Version %1$s</string>
+</resources>
