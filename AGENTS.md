@@ -112,6 +112,10 @@ Gadgetbridge's [`CONTRIBUTING.md`](CONTRIBUTING.md) applies here too:
 The target is "Apple Fitness, for Android". Before creating a screen, check how Apple Fitness presents the same idea
 (Summary, Activity rings, Trends, Sleep, Heart) and follow its information hierarchy.
 
+- **iOS 26 shell**: floating glass pill tab bar, circular glass back button, scroll-edge blur under the status bar,
+  large titles that collapse into the bar, ambient metric-color glow behind detail screens, charts straight on the
+  background (no card), and capsule buttons. Glass never goes inside the scrolling content it samples (see
+  `ui/glass/Glass.kt`). Users pick Liquid Glass or One UI glass in Settings → Appearance.
 - **Theme**: dark by default (true black background, `#1C1C1E` cards) and a light iOS-like variant (`#F2F2F7`
   background, white cards), following the system setting. Colors are tokens in `ui/theme/`; never hard-code a color
   in a screen.
@@ -132,22 +136,46 @@ app/bridgefit.gradle                      fork build config: flavor, Compose dep
 app/src/bridgefit/AndroidManifest.xml     new launcher activity; removes ControlCenterv2's launcher entry
 app/src/bridgefit/java/com/apenasangelo/bridgefit/
   BridgeFitActivity.kt                    entry point (Compose host, first-run and permission flow)
-  ClassicRedirect.kt                      sends upstream launches of ControlCenterv2 (notification, Up, pairing)
-                                          to BridgeFitActivity, unless opened as "Classic interface"
-  ui/theme/                               colors, typography, shapes (dark + light)
-  ui/components/                          rings, cards, charts, headers
-  ui/summary/                             Summary screen (rings + metric cards)
-  ui/metric/                              per-metric detail screens
+  BridgeFitBootstrap.kt                   process-start hooks (a no-data ContentProvider):
+                                          - sends upstream launches of ControlCenterv2 (notification, Up, pairing)
+                                            to BridgeFitActivity, unless opened as "Classic interface"
+                                          - re-skins upstream screens: circular back button, grouped preference lists
+  GroupedPreferenceDecoration.kt          iOS grouped-list look for any upstream PreferenceFragmentCompat
+  ui/theme/                               colors, typography (dark + light)
+  ui/glass/                               Liquid Glass / One UI glass (Kyant Backdrop), pill tab bar, top bar
+  ui/components/                          rings, cards, charts (gradient bars, ranges, hypnogram)
+  ui/prefs/                               native preference rows bound to upstream SharedPreferences keys
+  ui/summary/                             Summary screen (rings, metric cards, Trends)
+  ui/metric/                              per-metric detail screens with D/W/M/Y
   ui/devices/                             devices screen (battery, connection, sync, device settings)
-  data/                                   repositories that adapt upstream widgets/providers to UI state
+  ui/settings/                            Settings tab, Profile & Goals
+  data/                                   FitRepository (one day, via upstream widgets), PeriodRepository
+                                          (cached daily values for W/M/Y and Trends), GbEvents (broadcasts)
+app/src/bridgefit/res/values/colors.xml   leaf color overrides that re-skin every upstream screen
 ```
+
+### Coverage strategy
+
+- **Native (Compose)**: everything used daily, plus the generic app screens. Done: Summary, metric details with
+  D/W/M/Y, Trends, Devices, Settings tab, Profile & Goals. Next: app settings tree and notification settings (see
+  below), then alarms, reminders, world clocks, contacts, calendar selection, data management, pairing/discovery,
+  workouts, battery info, heart rate zones, Health Connect.
+- **Re-skinned upstream** (no rewrite): device-specific settings (391 XML screens) and device-specific activities
+  (Garmin, Pebble, QHybrid, Casio, …). They get our colors through `colors.xml` and the grouped look and back button
+  through `BridgeFitBootstrap`.
+- Native preference screens must write the same keys in the same format as the upstream widgets
+  (`EditTextPreference`/`ListPreference` store strings) and run the same side effects (`onSendConfiguration`,
+  `DeviceManager.ACTION_REFRESH_DEVICELIST`, …). Before porting a screen, list every
+  `setOnPreferenceChangeListener`/`setOnPreferenceClickListener` in its upstream fragment; `SettingsActivity` alone
+  has 29 of them.
 
 ## Known gaps of the new UI
 
-- Weekly/monthly trends are not native yet; detail screens link to the upstream charts ("Show All Charts").
-- Ring gradients show a small seam at 12 o'clock when a ring passes 100%.
+- App settings and notification settings are still the upstream screens (re-skinned), not native yet.
+- Trends compare the last 30 days with the last 90 (Apple uses 90 vs 365) and need 14 days of data.
+- Period data for the R09 has only been measured with the synthetic test device; check load times on real data.
 - The launcher icon is replaced only on Android 8+ (adaptive icon); older versions keep the Gadgetbridge PNGs.
-- Upstream screens (settings, device settings, charts, pairing) keep the Gadgetbridge Material look.
+- Glass effects need Android 12 (blur) and 13 (refraction); older versions get translucent surfaces.
 
 ## Roadmap
 
