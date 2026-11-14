@@ -1,0 +1,37 @@
+// Bridge Fit: build configuration of the fork.
+//
+// Everything specific to Bridge Fit lives here, so that app/build.gradle (an upstream file) only needs
+// an `apply from:` line and the Compose compiler plugin. See AGENTS.md, "Stay mergeable with upstream".
+
+android {
+    productFlavors {
+        create("bridgefit") {
+            dimension = "device_type"
+            applicationId = "com.apenasangelo.bridgefit"
+            versionNameSuffix = "-bridgefit"
+            // Note: app/src/bridgefit/ holds the new UI, its manifest and the resources that rename the app.
+        }
+    }
+
+    buildFeatures {
+        compose = true
+    }
+}
+
+dependencies {
+    def composeBom = platform("androidx.compose:compose-bom:2026.09.00")
+    bridgefitImplementation(composeBom)
+    bridgefitImplementation("androidx.compose.ui:ui")
+    bridgefitImplementation("androidx.compose.ui:ui-graphics")
+    bridgefitImplementation("androidx.compose.ui:ui-tooling-preview")
+    bridgefitImplementation("androidx.compose.foundation:foundation")
+    bridgefitImplementation("androidx.compose.material3:material3")
+    // Material Icons are frozen at 1.7.8 and no longer part of the BOM.
+    bridgefitImplementation("androidx.compose.material:material-icons-extended:1.7.8")
+    bridgefitImplementation("androidx.activity:activity-compose:${libs.versions.androidx.activity.get()}")
+    bridgefitImplementation("androidx.lifecycle:lifecycle-runtime-compose:${libs.versions.androidx.lifecycle.get()}")
+    bridgefitImplementation("androidx.lifecycle:lifecycle-viewmodel-compose:${libs.versions.androidx.lifecycle.get()}")
+    bridgefitImplementation("androidx.navigation:navigation-compose:2.10.2")
+    debugImplementation(composeBom)
+    debugImplementation("androidx.compose.ui:ui-tooling")
+}
