@@ -32,7 +32,15 @@ object Upstream {
     fun debug(context: Context) = start<DebugActivityV2>(context)
     fun about(context: Context) = start<AboutActivity>(context)
     fun discovery(context: Context) = start<DiscoveryActivityV2>(context)
-    fun workouts(context: Context) = start<WorkoutListActivity>(context)
+    /**
+     * The upstream workout list needs a device: the first one that records workouts, else the first one.
+     */
+    fun workouts(context: Context) {
+        val devices = nodomain.freeyourgadget.gadgetbridge.GBApplication.app().deviceManager.devices
+        val device = devices.firstOrNull { it.deviceCoordinator.supportsRecordedActivities(it) } ?: devices.firstOrNull()
+            ?: return
+        context.startActivity(Intent(context, WorkoutListActivity::class.java).putExtra(GBDevice.EXTRA_DEVICE, device))
+    }
 
     fun classicInterface(context: Context) = context.startActivity(
         Intent(context, ControlCenterv2::class.java).putExtra(com.apenasangelo.bridgefit.BridgeFitBootstrap.EXTRA_CLASSIC, true),

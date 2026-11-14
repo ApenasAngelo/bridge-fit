@@ -136,7 +136,7 @@ fun BarChart(
 ) {
     val grid = fit.chartGrid
     val empty = fit.textTertiary.copy(alpha = 0.35f)
-    val top = maxValue ?: niceMax(max(values.maxOrNull() ?: 0f, goalLine ?: 0f))
+    val top = maxValue ?: niceMax(max(values.filter { !it.isNaN() }.maxOrNull() ?: 0f, goalLine ?: 0f))
     Column(modifier) {
         Row {
             Canvas(Modifier.weight(1f).height(height)) {
@@ -148,7 +148,8 @@ fun BarChart(
                     if (i >= activeCount) return@forEachIndexed
                     val h = (v / top).coerceIn(0f, 1f) * size.height
                     val x = i * slot + (slot - barWidth) / 2f
-                    if (v <= 0f) {
+                    // NaN marks a bucket without data (e.g. stress hours with no samples).
+                    if (v.isNaN() || v <= 0f) {
                         drawRoundRect(empty, Offset(x, size.height - 2.dp.toPx()), Size(barWidth, 2.dp.toPx()), radius)
                     } else {
                         val barColor = colors?.getOrNull(i) ?: color
