@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,83 +17,128 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBars
-import androidx.compose.foundation.layout.windowInsetsPadding
-import androidx.compose.foundation.layout.windowInsetsTopHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.ChevronLeft
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.apenasangelo.bridgefit.ui.Fmt
-import com.apenasangelo.bridgefit.ui.theme.FitColors
+import com.apenasangelo.bridgefit.ui.components.FitCard
+import com.apenasangelo.bridgefit.ui.glass.FloatingTopBar
+import com.apenasangelo.bridgefit.ui.glass.GlassHost
+import com.apenasangelo.bridgefit.ui.glass.TopBarHeight
 import com.apenasangelo.bridgefit.ui.theme.FitType
 import com.apenasangelo.bridgefit.ui.theme.fit
-import com.apenasangelo.bridgefit.ui.components.FitCard
-import com.apenasangelo.bridgefit.ui.components.ListRow
 import nodomain.freeyourgadget.gadgetbridge.R
 import java.time.LocalDate
 
 /**
- * The iOS-style navigation bar of a pushed screen: a back chevron with the previous title, and a centered title.
+ * A soft glow of [color] behind the top of a screen, like the colored haze behind iOS 26 Fitness detail screens.
  */
-@Composable
-fun NavBar(title: String, backLabel: String, onBack: () -> Unit) {
-    Column(Modifier.fillMaxWidth().background(fit.background)) {
-        Spacer(Modifier.windowInsetsTopHeight(WindowInsets.statusBars))
-        Box(Modifier.fillMaxWidth().height(44.dp)) {
-            Row(
-                Modifier.align(Alignment.CenterStart).clip(CircleShape).clickable(onClick = onBack)
-                    .padding(start = 4.dp, end = 10.dp, top = 6.dp, bottom = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Icon(Icons.Rounded.ChevronLeft, null, tint = FitColors.accent, modifier = Modifier.size(30.dp))
-                Text(backLabel, style = FitType.body, color = FitColors.accent)
-            }
-            Text(
-                title, style = FitType.headline, color = fit.textPrimary, textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.Center).padding(horizontal = 110.dp), maxLines = 1,
-            )
-        }
-    }
+fun Modifier.ambientGlow(color: Color, isDark: Boolean): Modifier = drawBehind {
+    val alpha = if (isDark) 0.34f else 0.22f
+    val radius = size.width * 0.95f
+    drawRect(
+        Brush.radialGradient(
+            0f to color.copy(alpha = alpha),
+            0.55f to color.copy(alpha = alpha * 0.35f),
+            1f to Color.Transparent,
+            center = Offset(size.width * 0.5f, -radius * 0.2f),
+            radius = radius,
+        ),
+    )
 }
 
 /**
- * A pushed detail screen: nav bar, a day switcher, then [content] in a scrolling column of cards.
+ * A pushed screen: a floating glass top bar over a large title, then [content].
+ * The small title in the bar fades in once the large title scrolls under it.
+ */
+@Composable
+fun PushedScreen(
+    title: String,
+    onBack: () -> Unit,
+    glow: Color? = null,
+    trailing: (@Composable () -> Unit)? = null,
+    content: LazyListScope.() -> Unit,
+) {
+    val listState = rememberLazyListState()
+    val density = LocalDensity.current
+    val titleAlpha by remember {
+        derivedStateOf {
+            if (listState.firstVisibleItemIndex > 0) {
+                1f
+            } else {
+                with(density) { (listState.firstVisibleItemScrollOffset / 40.dp.toPx()).coerceIn(0f, 1f) }
+            }
+        }
+    }
+    val top = WindowInsets.statusBars.asPaddingValues().calculateTopPadding()
+    val bottom = WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
+    val isDark = fit.isDark
+    GlassHost(
+        Modifier.fillMaxSize(),
+        content = {
+            Box(
+                Modifier.fillMaxSize().background(fit.background)
+                    .then(if (glow != null) Modifier.ambientGlow(glow, isDark) else Modifier),
+            ) {
+                LazyColumn(
+                    Modifier.fillMaxSize(),
+                    state = listState,
+                    contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = top + TopBarHeight, bottom = bottom + 32.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    item {
+                        Text(
+                            title, style = FitType.largeTitle, color = fit.textPrimary,
+                            modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 2.dp),
+                        )
+                    }
+                    content()
+                }
+            }
+        },
+        overlay = {
+            FloatingTopBar(title, titleAlpha, onBack, stringResource(R.string.bf_back), trailing)
+        },
+    )
+}
+
+/**
+ * A pushed detail screen with a day switcher under the large title.
  */
 @Composable
 fun DetailScaffold(
     title: String,
-    backLabel: String,
     day: LocalDate,
+    glow: Color,
     onBack: () -> Unit,
     onShiftDay: (Long) -> Unit,
     content: LazyListScope.() -> Unit,
 ) {
-    Column(Modifier.fillMaxSize().background(fit.background)) {
-        NavBar(title, backLabel, onBack)
-        LazyColumn(
-            Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 32.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            item { DaySwitcher(day, onShiftDay) }
-            content()
-            item { Spacer(Modifier.windowInsetsPadding(WindowInsets.navigationBars)) }
-        }
+    PushedScreen(title, onBack, glow) {
+        item { DaySwitcher(day, onShiftDay) }
+        content()
     }
 }
 
@@ -101,17 +147,21 @@ fun DaySwitcher(day: LocalDate, onShiftDay: (Long) -> Unit) {
     val context = LocalContext.current
     val canGoForward = day.isBefore(LocalDate.now())
     Row(
-        Modifier.fillMaxWidth().clip(CircleShape).background(fit.control).padding(horizontal = 4.dp),
+        Modifier.fillMaxWidth().clip(CircleShape).background(fit.control.copy(alpha = 0.7f)).padding(4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(onClick = { onShiftDay(-1) }) {
-            Icon(Icons.Rounded.ChevronLeft, stringResource(R.string.bf_previous_day), tint = fit.textPrimary)
-        }
+        Box(
+            Modifier.size(36.dp).clip(CircleShape).clickable { onShiftDay(-1) },
+            contentAlignment = Alignment.Center,
+        ) { Icon(Icons.Rounded.ChevronLeft, stringResource(R.string.bf_previous_day), tint = fit.textPrimary) }
         Text(
             Fmt.dayTitle(context, day), style = FitType.subheadlineBold, color = fit.textPrimary,
             textAlign = TextAlign.Center, modifier = Modifier.weight(1f),
         )
-        IconButton(onClick = { onShiftDay(1) }, enabled = canGoForward) {
+        Box(
+            Modifier.size(36.dp).clip(CircleShape).clickable(enabled = canGoForward) { onShiftDay(1) },
+            contentAlignment = Alignment.Center,
+        ) {
             Icon(
                 Icons.Rounded.ChevronRight, stringResource(R.string.bf_next_day),
                 tint = if (canGoForward) fit.textPrimary else fit.textTertiary,
@@ -121,20 +171,32 @@ fun DaySwitcher(day: LocalDate, onShiftDay: (Long) -> Unit) {
 }
 
 /**
- * The big value block at the top of a detail screen: a small caption, the value, and a secondary line.
+ * The value block of a detail screen, with no card: caption, the value, and a date or secondary line.
  */
 @Composable
 fun Hero(caption: String, secondary: String? = null, value: @Composable () -> Unit) {
-    Column(Modifier.padding(horizontal = 4.dp, vertical = 8.dp)) {
-        Text(caption.uppercase(), style = FitType.footnote, color = fit.textSecondary)
+    Column(Modifier.padding(horizontal = 4.dp, vertical = 4.dp)) {
+        Text(caption.uppercase(), style = FitType.footnote.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold), color = fit.textSecondary)
         value()
-        secondary?.let { Text(it, style = FitType.subheadline, color = fit.textSecondary) }
+        secondary?.let { Text(it, style = FitType.subheadlineBold, color = fit.textSecondary) }
     }
 }
 
 /**
- * A card with a title and a chart or any other content.
+ * A chart straight on the background, with an optional headline. The iOS 26 detail screens drop the card.
  */
+@Composable
+fun ChartBlock(title: String? = null, content: @Composable () -> Unit) {
+    Column(Modifier.padding(horizontal = 4.dp, vertical = 4.dp)) {
+        title?.let {
+            Text(it, style = FitType.headline, color = fit.textPrimary)
+            Spacer(Modifier.height(10.dp))
+        }
+        content()
+    }
+}
+
+/** Kept for screens that still group a chart with other content. */
 @Composable
 fun ChartCard(title: String? = null, content: @Composable () -> Unit) {
     FitCard {
@@ -147,7 +209,7 @@ fun ChartCard(title: String? = null, content: @Composable () -> Unit) {
 }
 
 /**
- * A row of statistics in one card, split evenly.
+ * Statistics in one card, two per row.
  */
 @Composable
 fun StatsCard(stats: List<@Composable (Modifier) -> Unit>) {
@@ -171,17 +233,16 @@ fun AboutCard(title: String, text: String) {
     }
 }
 
+/**
+ * A full-width capsule button with colored text, like "View All Steps Metrics".
+ */
 @Composable
-fun OpenChartsCard(color: Color, onClick: () -> Unit) {
-    FitCard(contentPadding = false) {
-        ListRow(
-            title = stringResource(R.string.bf_open_charts),
-            subtitle = stringResource(R.string.bf_open_charts_subtitle),
-            icon = Icons.AutoMirrored.Rounded.ShowChart,
-            iconTint = Color.White,
-            iconBackground = color,
-            onClick = onClick,
-        )
+fun CapsuleButton(text: String, color: Color, onClick: () -> Unit) {
+    Box(
+        Modifier.fillMaxWidth().height(54.dp).clip(CircleShape).background(fit.card).clickable(onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(text, style = FitType.headline, color = color)
     }
 }
 

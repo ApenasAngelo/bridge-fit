@@ -18,6 +18,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,9 +70,9 @@ fun MetricDetailScreen(metric: Metric, vm: FitViewModel, onBack: () -> Unit) {
     val live by vm.liveHeartRate.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
-    DetailScaffold(
+    CompositionLocalProvider(LocalHero provides metric.color) { DetailScaffold(
         title = stringResource(metric.title),
-        backLabel = stringResource(R.string.bf_summary_title),
+        glow = metric.color,
         day = day,
         onBack = onBack,
         onShiftDay = vm::shiftDay,
@@ -95,17 +97,30 @@ fun MetricDetailScreen(metric: Metric, vm: FitViewModel, onBack: () -> Unit) {
             Metric.STRESS -> stress(snap)
             Metric.TEMPERATURE -> temperature(snap)
         }
-        metric.about?.let { about ->
-            item { AboutCard(stringResource(R.string.bf_about), stringResource(about)) }
-        }
         val device = deviceFor(metric)
         if (device != null && metric.chart != null) {
             item {
-                OpenChartsCard(metric.color) { Upstream.charts(context, device, day, metric.chart, metric.title) }
+                CapsuleButton(stringResource(R.string.bf_open_charts), metric.color) {
+                    Upstream.charts(context, device, day, metric.chart, metric.title)
+                }
             }
         }
-    }
+        metric.about?.let { about ->
+            item { AboutCard(stringResource(R.string.bf_about), stringResource(about)) }
+        }
+    } }
 }
+
+/** The color of the hero value: the metric's own color, as in iOS 26 Fitness. */
+private val LocalHero = staticCompositionLocalOf { Color.White }
+
+@Composable
+private fun sleepLaneNames() = listOf(
+    stringResource(R.string.bf_stage_awake),
+    stringResource(R.string.bf_stage_rem),
+    stringResource(R.string.bf_stage_core),
+    stringResource(R.string.bf_stage_deep),
+)
 
 private fun deviceFor(metric: Metric): GBDevice? {
     val devices = FitRepository.devices()
@@ -256,12 +271,12 @@ private fun LazyListScope.steps(snap: DaySnapshot, goals: FitGoals) {
     val data = snap.steps ?: return noData()
     item {
         Hero(stringResource(R.string.bf_total)) {
-            ValueText(Fmt.int(data.total), stringResource(R.string.bf_unit_steps), fit.textPrimary, style = FitType.heroValue)
+            ValueText(Fmt.int(data.total), stringResource(R.string.bf_unit_steps), LocalHero.current, style = FitType.heroValue)
         }
     }
     data.hourly?.let { hourly ->
         item {
-            ChartCard(stringResource(R.string.bf_hourly)) {
+            ChartBlock(stringResource(R.string.bf_hourly)) {
                 BarChart(hourly, Metric.STEPS.color, activeCount = data.hoursStarted)
             }
         }
@@ -284,12 +299,12 @@ private fun LazyListScope.distance(snap: DaySnapshot, goals: FitGoals) {
     item {
         val (value, unit) = Fmt.distance(data.total)
         Hero(stringResource(R.string.bf_total)) {
-            ValueText(value, unit.uppercase(), fit.textPrimary, style = FitType.heroValue)
+            ValueText(value, unit.uppercase(), LocalHero.current, style = FitType.heroValue)
         }
     }
     data.hourly?.let { hourly ->
         item {
-            ChartCard(stringResource(R.string.bf_hourly)) {
+            ChartBlock(stringResource(R.string.bf_hourly)) {
                 BarChart(hourly, Metric.DISTANCE.color, activeCount = data.hoursStarted)
             }
         }
@@ -329,7 +344,7 @@ private fun LazyListScope.heartRate(snap: DaySnapshot, live: Int?, canMeasure: B
                     Hero(stringResource(R.string.bf_range_caption), secondary) {
                         ValueText(
                             stringResource(R.string.bf_range, data.minimum.toString(), data.maximum.toString()),
-                            stringResource(R.string.bf_unit_bpm), fit.textPrimary, style = FitType.heroValue,
+                            stringResource(R.string.bf_unit_bpm), LocalHero.current, style = FitType.heroValue,
                         )
                     }
                 } else {
@@ -352,7 +367,7 @@ private fun LazyListScope.heartRate(snap: DaySnapshot, live: Int?, canMeasure: B
         }
     }
     data.line?.let { line ->
-        item { ChartCard { RangeChart(line, FitColors.heart, height = 180.dp) } }
+        item { ChartBlock { RangeChart(line, FitColors.heart, height = 180.dp) } }
     }
     item {
         StatsCard(
@@ -380,11 +395,11 @@ private fun LazyListScope.sleep(snap: DaySnapshot, goals: FitGoals) {
     val data = snap.sleep ?: return noData()
     item {
         Hero(stringResource(R.string.bf_time_asleep)) {
-            if (data.total > 0) DurationText(data.total, fit.textPrimary, style = FitType.heroValue) else NoData()
+            if (data.total > 0) DurationText(data.total, LocalHero.current, style = FitType.heroValue) else NoData()
         }
     }
     data.night?.takeIf { it.isNotEmpty() }?.let { night ->
-        item { ChartCard { Hypnogram(night, height = 170.dp) } }
+        item { ChartBlock { Hypnogram(night, laneNames = sleepLaneNames()) } }
     }
     data.stages?.let { stages ->
         item {
@@ -430,7 +445,7 @@ private fun LazyListScope.spo2(snap: DaySnapshot) {
     val data = snap.spo2 ?: return noData()
     item {
         Hero(stringResource(R.string.bf_latest)) {
-            if (data.spo2 > 0) ValueText(data.spo2.toString(), "%", fit.textPrimary, style = FitType.heroValue) else NoData()
+            if (data.spo2 > 0) ValueText(data.spo2.toString(), "%", LocalHero.current, style = FitType.heroValue) else NoData()
         }
     }
     data.hourly?.let { hourly ->
@@ -439,7 +454,7 @@ private fun LazyListScope.spo2(snap: DaySnapshot) {
             val points = hourly.toList().mapIndexedNotNull { hour, v ->
                 if (v.isNaN() || v <= 0f) null else (dayStart + hour * 3600L + 1800L) to v
             }
-            ChartCard(stringResource(R.string.bf_hourly)) { PointChart(points, FitColors.spo2, dayStart) }
+            ChartBlock(stringResource(R.string.bf_hourly)) { PointChart(points, FitColors.spo2, dayStart) }
         }
     }
     item {
@@ -457,7 +472,7 @@ private fun LazyListScope.hrv(snap: DaySnapshot) {
     item {
         Hero(stringResource(R.string.bf_last_night)) {
             if (data.lastNight > 0) {
-                ValueText(data.lastNight.toString(), stringResource(R.string.bf_unit_ms), fit.textPrimary, style = FitType.heroValue)
+                ValueText(data.lastNight.toString(), stringResource(R.string.bf_unit_ms), LocalHero.current, style = FitType.heroValue)
             } else {
                 NoData()
             }
@@ -465,9 +480,9 @@ private fun LazyListScope.hrv(snap: DaySnapshot) {
     }
     data.nights?.let { nights ->
         item {
-            ChartCard {
+            ChartBlock {
                 val values = FloatArray(nights.size) { if (nights[it].isNaN()) 0f else nights[it] }
-                BarChart(values, FitColors.hrv, showGuides = false, showAxis = false)
+                BarChart(values, FitColors.hrv, xLabels = null)
             }
         }
     }
@@ -498,7 +513,7 @@ private fun LazyListScope.stress(snap: DaySnapshot) {
             if (data.value > 0) {
                 val zone = stressZone(data.value, data.ranges)
                 Row(verticalAlignment = Alignment.Bottom) {
-                    ValueText(data.value.toString(), null, fit.textPrimary, style = FitType.heroValue)
+                    ValueText(data.value.toString(), null, LocalHero.current, style = FitType.heroValue)
                     Spacer(Modifier.padding(4.dp))
                     Text(stringResource(stressLabels[zone]), style = FitType.title3, color = FitColors.stressZones[zone], modifier = Modifier.padding(bottom = 6.dp))
                 }
@@ -509,7 +524,7 @@ private fun LazyListScope.stress(snap: DaySnapshot) {
     }
     data.hourly?.let { hourly ->
         item {
-            ChartCard(stringResource(R.string.bf_hourly)) {
+            ChartBlock(stringResource(R.string.bf_hourly)) {
                 val colors = hourly.map { v -> FitColors.stressZones[stressZone(v.toInt(), data.ranges)] }
                 BarChart(hourly, FitColors.stress, activeCount = data.hoursStarted, maxValue = 100f, colors = colors)
             }
@@ -535,13 +550,13 @@ private fun LazyListScope.temperature(snap: DaySnapshot) {
         val context = LocalContext.current
         Hero(stringResource(R.string.bf_latest), data.latestSeconds?.let { stringResource(R.string.bf_latest_at, Fmt.time(context, it)) }) {
             val latest = data.latest
-            if (latest != null) ValueText(Fmt.decimal(latest), celsius, fit.textPrimary, style = FitType.heroValue) else NoData()
+            if (latest != null) ValueText(Fmt.decimal(latest), celsius, LocalHero.current, style = FitType.heroValue) else NoData()
         }
     }
     if (data.samples.isNotEmpty()) {
         item {
             val dayStart = snap.day.atStartOfDay(ZoneId.systemDefault()).toEpochSecond()
-            ChartCard { PointChart(data.samples, FitColors.temperature, dayStart, height = 170.dp) }
+            ChartBlock { PointChart(data.samples, FitColors.temperature, dayStart, height = 170.dp) }
         }
         item {
             StatsCard(

@@ -103,6 +103,9 @@ private fun DrawScope.drawRing(ring: RingSpec, progress: Float, inset: Float, st
                 style = Stroke(stroke, cap = StrokeCap.Round),
             )
         }
+        // The round start cap reaches back past 12 o'clock, where the sweep gradient wraps to the end color;
+        // repaint it in the start color so there is no seam.
+        drawCircle(ring.start, stroke / 2f, Offset(center.x, center.y - radius))
     } else {
         // Full lap in the end color, then the overlapping part on top with a shadow at its head.
         drawArc(ring.end, 0f, 360f, false, topLeft, arcSize, style = Stroke(stroke))
@@ -121,6 +124,7 @@ private fun DrawScope.drawRing(ring: RingSpec, progress: Float, inset: Float, st
                 style = Stroke(stroke, cap = StrokeCap.Round),
             )
         }
+        if (extra > 30f) drawCircle(ring.start, stroke / 2f, Offset(center.x, center.y - radius))
         drawCircle(ring.end, stroke / 2f, head)
     }
 }

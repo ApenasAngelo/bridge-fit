@@ -80,6 +80,13 @@
     <string name="bf_about_metric_spo2">Saturação de oxigênio no sangue medida pelo dispositivo, geralmente durante o sono.</string>
     <string name="bf_about_metric_sleep">Estágios do sono detectados pelo dispositivo. Essencial corresponde ao sono leve.</string>
     <string name="bf_about">Sobre</string>
+    <string name="bf_back">Voltar</string>
+    <string name="bf_appearance">Aparência</string>
+    <string name="bf_glass_style">Estilo do Vidro</string>
+    <string name="bf_glass_liquid">Liquid Glass</string>
+    <string name="bf_glass_liquid_subtitle">Desfoque com refração nas bordas, como no iOS 26</string>
+    <string name="bf_glass_oneui">One UI</string>
+    <string name="bf_glass_oneui_subtitle">Desfoque fosco forte, como no One UI da Samsung</string>
 
     <string name="bf_move_goal">Meta de movimento</string>
     <string name="bf_this_week">Esta Semana</string>

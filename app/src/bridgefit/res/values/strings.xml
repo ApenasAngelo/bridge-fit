@@ -95,6 +95,13 @@
     <string name="bf_about_metric_spo2">Blood oxygen saturation, as measured by your device, usually while you sleep.</string>
     <string name="bf_about_metric_sleep">Sleep stages as detected by your device. Core is the light sleep stage.</string>
     <string name="bf_about">About</string>
+    <string name="bf_back">Back</string>
+    <string name="bf_appearance">Appearance</string>
+    <string name="bf_glass_style">Glass Style</string>
+    <string name="bf_glass_liquid">Liquid Glass</string>
+    <string name="bf_glass_liquid_subtitle">Blur with refraction at the edges, like iOS 26</string>
+    <string name="bf_glass_oneui">One UI</string>
+    <string name="bf_glass_oneui_subtitle">Strong frosted blur, like Samsung One UI</string>
 
     <!-- Activity detail -->
     <string name="bf_move_goal">Move goal</string>

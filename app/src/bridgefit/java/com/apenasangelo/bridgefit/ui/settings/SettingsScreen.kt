@@ -8,7 +8,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.BlurOn
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.BugReport
+import com.apenasangelo.bridgefit.ui.glass.GlassSettings
+import com.apenasangelo.bridgefit.ui.glass.GlassStyle
 import androidx.compose.material.icons.rounded.Dashboard
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -79,6 +83,30 @@ fun SettingsScreen(contentPadding: PaddingValues) {
                         )
                     },
                 ),
+            )
+        }
+        item { GroupCaption(stringResource(R.string.bf_appearance)) }
+        item {
+            val current = GlassSettings.style
+            GroupedList(
+                rows = listOf(
+                    GlassStyle.LIQUID to (R.string.bf_glass_liquid to R.string.bf_glass_liquid_subtitle),
+                    GlassStyle.ONE_UI to (R.string.bf_glass_oneui to R.string.bf_glass_oneui_subtitle),
+                ).map { (style, texts) ->
+                    {
+                        ListRow(
+                            stringResource(texts.first), subtitle = stringResource(texts.second),
+                            icon = Icons.Rounded.BlurOn, iconBackground = if (style == GlassStyle.LIQUID) FitColors.accent else FitColors.sleep,
+                            showChevron = false,
+                            trailing = {
+                                if (current == style) {
+                                    androidx.compose.material3.Icon(Icons.Rounded.Check, null, tint = FitColors.accent)
+                                }
+                            },
+                            onClick = { GlassSettings.set(style) },
+                        )
+                    }
+                },
             )
         }
         item { GroupCaption(stringResource(R.string.bf_section_data)) }
